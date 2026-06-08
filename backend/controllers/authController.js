@@ -1,0 +1,62 @@
+const User = require('../models/User');
+const jwt = require('jsonwebtoken');
+
+// Generate JWT token
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: '30d',
+  });
+};
+
+// @desc    Auth user & get token
+// @route   POST /api/auth/login
+// @access  Public
+const loginUser = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      res.status(400);
+      throw new Error('Please provide email and password');
+    }
+
+    // Check for user email
+    const user = await User.findOne({ email }).select('+password');
+
+    if (user && (await user.matchPassword(password))) {
+      if (user.status === 'Inactive') {
+        res.status(403);
+        throw new Error('Your account is deactivated. Please contact the administrator.');
+      }
+
+      res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        token: generateToken(user._id),
+      });
+    } else {
+      res.status(401);
+      throw new Error('Invalid email or password');
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get current user profile
+// @route   GET /api/auth/me
+// @access  Private
+const getMe = async (req, res, next) => {
+  try {
+    res.json(req.user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {
+  loginUser,
+  getMe,
+};
