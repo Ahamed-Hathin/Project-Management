@@ -20,8 +20,8 @@ const loginUser = async (req, res, next) => {
       throw new Error('Please provide email and password');
     }
 
-    // Check for user email (convert to lowercase to handle mobile auto-capitalization)
-    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    // Check for user email (convert to lowercase and trim spaces to handle mobile auto-capitalization and trailing spaces)
+    const user = await User.findOne({ email: email.trim().toLowerCase() }).select('+password');
 
     if (user && (await user.matchPassword(password))) {
       if (user.status === 'Inactive') {
