@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5080/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://project-management-mqb55ytra-ahamed-hathins-projects.vercel.app/api',
 });
 
 // Interceptor to add JWT token to headers
