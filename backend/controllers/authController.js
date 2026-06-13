@@ -46,10 +46,7 @@ const loginUser = async (req, res, next) => {
         role: user.role,
         token: generateToken(user._id),
       });
-    } else {
-      res.status(401);
-      throw new Error('Invalid email or password');
-    }
+
   } catch (error) {
     next(error);
   }
