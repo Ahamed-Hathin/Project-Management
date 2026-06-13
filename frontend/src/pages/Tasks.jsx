@@ -18,6 +18,7 @@ const Tasks = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
   const [employeeFilter, setEmployeeFilter] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
 
   const [projects, setProjects] = useState([]);
   const [employees, setEmployees] = useState([]);
@@ -105,6 +106,59 @@ const Tasks = () => {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>
   );
 
+  const filterOptions = [
+    {
+      label: 'Projects',
+      options: projects.map(p => ({ value: p._id, label: p.name, category: 'project' }))
+    },
+    {
+      label: 'Status',
+      options: [
+        { value: 'Pending', label: 'Pending', category: 'status' },
+        { value: 'In Progress', label: 'In Progress', category: 'status' },
+        { value: 'Review', label: 'Review', category: 'status' },
+        { value: 'Completed', label: 'Completed', category: 'status' }
+      ]
+    },
+    {
+      label: 'Priority',
+      options: [
+        { value: 'Low', label: 'Low', category: 'priority' },
+        { value: 'Medium', label: 'Medium', category: 'priority' },
+        { value: 'High', label: 'High', category: 'priority' },
+        { value: 'Urgent', label: 'Urgent', category: 'priority' }
+      ]
+    }
+  ];
+
+  if (user?.role !== 'Employee') {
+    filterOptions.push({
+      label: 'Assignees',
+      options: employees.map(emp => ({ value: emp._id, label: emp.name, category: 'employee' }))
+    });
+  }
+
+  const currentFilters = filterOptions.flatMap(g => g.options).filter(o => 
+    (o.category === 'project' && o.value === projectFilter) || 
+    (o.category === 'status' && o.value === statusFilter) || 
+    (o.category === 'priority' && o.value === priorityFilter) || 
+    (o.category === 'employee' && o.value === employeeFilter)
+  );
+
+  const handleFilterChange = (e) => {
+    const selected = e.target.value || [];
+    
+    const activeProject = selected.filter(o => o.category === 'project').pop()?.value || '';
+    const activeStatus = selected.filter(o => o.category === 'status').pop()?.value || '';
+    const activePriority = selected.filter(o => o.category === 'priority').pop()?.value || '';
+    const activeEmployee = selected.filter(o => o.category === 'employee').pop()?.value || '';
+    
+    setProjectFilter(activeProject);
+    setStatusFilter(activeStatus);
+    setPriorityFilter(activePriority);
+    setEmployeeFilter(activeEmployee);
+  };
+
   return (
     <div className="row g-4">
       <div className={showDetailsPanel ? 'col-12 col-xl-7' : 'col-12'}>
@@ -117,30 +171,64 @@ const Tasks = () => {
               <h1 style={{ fontSize: 15, fontWeight: 600, color: '#111827', margin: 0 }}>Tasks</h1>
               <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 6, background: '#F3F4F6', color: '#6B7280' }}>{tasks.length}</span>
             </div>
-            {canManage && (
-              <button onClick={handleOpenAdd} style={{ height: 36, padding: '0 14px', background: '#111827', border: 'none', borderRadius: 9, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6, boxShadow: '0 1px 3px rgba(17,24,39,0.25)' }}>
-                <SvgIcon d="M12 5v14M5 12h14" color="#fff" size={14} />
-                New Task
-              </button>
-            )}
-          </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              
+              <div style={{ position: 'relative' }}>
+                <button onClick={() => setShowFilters(!showFilters)} style={{ height: 36, padding: '0 14px', background: showFilters ? '#F3F4F6' : '#fff', border: '1px solid #E5E7EB', borderRadius: 9, color: '#374151', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.2s' }}>
+                  <SvgIcon d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" color="#6B7280" size={14} />
+                  Filter
+                  {currentFilters.length > 0 && (
+                    <span style={{ background: '#3B82F6', color: '#fff', fontSize: 10, padding: '2px 6px', borderRadius: 10, marginLeft: 2 }}>{currentFilters.length}</span>
+                  )}
+                </button>
 
-          {/* Filters */}
-          <div style={{ padding: '12px 24px', borderBottom: '1px solid #E5E7EB', background: '#F9FAFB', display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-            <div style={{ width: 160 }}>
-              <CustomSelect value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)} options={[{value: '', label: 'All Projects'}, ...projects.map(p => ({value: p._id, label: p.name}))]} />
-            </div>
-            <div style={{ width: 140 }}>
-              <CustomSelect value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} options={[{value: '', label: 'All Statuses'}, {value: 'Pending', label: 'Pending'}, {value: 'In Progress', label: 'In Progress'}, {value: 'Review', label: 'Review'}, {value: 'Completed', label: 'Completed'}]} />
-            </div>
-            <div style={{ width: 130 }}>
-              <CustomSelect value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value)} options={[{value: '', label: 'All Priorities'}, {value: 'Low', label: 'Low'}, {value: 'Medium', label: 'Medium'}, {value: 'High', label: 'High'}, {value: 'Urgent', label: 'Urgent'}]} />
-            </div>
-            {user?.role !== 'Employee' && (
-              <div style={{ width: 150 }}>
-                <CustomSelect value={employeeFilter} onChange={(e) => setEmployeeFilter(e.target.value)} options={[{value: '', label: 'All Assignees'}, ...employees.map(emp => ({value: emp._id, label: emp.name}))]} />
+                {showFilters && (
+                  <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 8, width: 240, background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, boxShadow: '0 10px 25px rgba(0,0,0,0.1)', zIndex: 50, maxHeight: 400, overflowY: 'auto', padding: '12px 0' }}>
+                    {filterOptions.map((group, idx) => (
+                       <div key={idx} style={{ marginBottom: idx === filterOptions.length - 1 ? 0 : 16 }}>
+                         <div style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '0 16px', marginBottom: 6 }}>{group.label}</div>
+                         {group.options.map(opt => {
+                           const isSelected = currentFilters.some(f => f.value === opt.value && f.category === opt.category);
+                           return (
+                             <div 
+                               key={opt.value} 
+                               onClick={() => {
+                                 let newSelection = [...currentFilters];
+                                 if (isSelected) {
+                                   newSelection = newSelection.filter(f => !(f.value === opt.value && f.category === opt.category));
+                                 } else {
+                                   newSelection = newSelection.filter(f => f.category !== opt.category);
+                                   newSelection.push(opt);
+                                 }
+                                 handleFilterChange({ target: { value: newSelection }});
+                               }}
+                               style={{ padding: '8px 16px', fontSize: 13, color: isSelected ? '#3B82F6' : '#374151', background: isSelected ? '#EFF6FF' : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                               onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#F9FAFB'; }}
+                               onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
+                             >
+                               {opt.label}
+                               {isSelected && <SvgIcon d="M5 13l4 4L19 7" size={14} color="#3B82F6" />}
+                             </div>
+                           );
+                         })}
+                       </div>
+                    ))}
+                    {currentFilters.length > 0 && (
+                      <div style={{ padding: '12px 16px 0', borderTop: '1px solid #E5E7EB', marginTop: 8 }}>
+                        <button onClick={() => handleFilterChange({ target: { value: [] }})} style={{ width: '100%', padding: '6px 0', background: '#F3F4F6', border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 600, color: '#4B5563', cursor: 'pointer' }}>Clear Filters</button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            )}
+
+              {canManage && (
+                <button onClick={handleOpenAdd} style={{ height: 36, padding: '0 14px', background: '#111827', border: 'none', borderRadius: 9, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6, boxShadow: '0 1px 3px rgba(17,24,39,0.25)', flexShrink: 0 }}>
+                  <SvgIcon d="M12 5v14M5 12h14" color="#fff" size={14} />
+                  New Task
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Table */}

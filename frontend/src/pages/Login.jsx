@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const demos = [
-  { label: 'Admin',     email: 'admin@example.com',    password: 'admin123',    color: '#111827' },
-  { label: 'TL 1',      email: 'leader1@example.com',  password: 'leader123',   color: '#16A34A' },
-  { label: 'Employee',  email: 'employee1@example.com', password: 'employee123', color: '#D97706' },
+  { label: 'Admin',     email: 'admin@company.com',    password: 'admin123',    color: '#111827' },
+  { label: 'TL 1',      email: 'tl1@company.com',  password: 'leader123',   color: '#16A34A' },
+  { label: 'Employee',  email: 'emp1@company.com', password: 'employee123', color: '#D97706' },
 ];
 
 const Login = () => {

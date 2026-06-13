@@ -58,7 +58,11 @@ const CustomSelect = ({ options, value, onChange, placeholder, isMulti, name, cl
   const handleChange = (selected) => {
     if (onChange) {
       // Mock event structure
-      onChange({ target: { name, value: selected ? selected.value : '' } });
+      if (isMulti) {
+        onChange({ target: { name, value: selected || [] } });
+      } else {
+        onChange({ target: { name, value: selected ? selected.value : '' } });
+      }
     }
   };
 
