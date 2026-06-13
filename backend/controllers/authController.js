@@ -23,11 +23,21 @@ const loginUser = async (req, res, next) => {
     // Check for user email (convert to lowercase and trim spaces to handle mobile auto-capitalization and trailing spaces)
     const user = await User.findOne({ email: email.trim().toLowerCase() }).select('+password');
 
-    if (user && (await user.matchPassword(password))) {
-      if (user.status === 'Inactive') {
-        res.status(403);
-        throw new Error('Your account is deactivated. Please contact the administrator.');
-      }
+    if (!user) {
+      res.status(401);
+      throw new Error(`DEBUG: User not found for email [${email.trim().toLowerCase()}] in DB. Is the DB empty?`);
+    }
+
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+      res.status(401);
+      throw new Error(`DEBUG: Password mismatch for user [${user.email}]. Check seed data hashing!`);
+    }
+
+    if (user.status === 'Inactive') {
+      res.status(401);
+      throw new Error('Your account is deactivated. Please contact administration.');
+    }
 
       res.json({
         _id: user._id,
